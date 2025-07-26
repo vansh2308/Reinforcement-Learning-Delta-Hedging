@@ -5,7 +5,7 @@ from gymnasium import spaces
 class DeltaHedgingEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, T=1.0, N=100, S0=100, K=100, r=0.01, sigma=0.2, option_type='call', transaction_cost=0.001, pricing_model='black_scholes', heston_params=None, merton_params=None):
+    def __init__(self, T=1.0, N=100, S0=100, K=100, r=0.01, sigma=0.2, option_type='call', transaction_cost=0.001, transaction_cost_model='linear', pricing_model='black_scholes', heston_params=None, merton_params=None):
         super(DeltaHedgingEnv, self).__init__()
         self.T = T  # Time to maturity
         self.N = N  # Number of time steps
@@ -16,6 +16,7 @@ class DeltaHedgingEnv(gym.Env):
         self.sigma = sigma
         self.option_type = option_type
         self.transaction_cost = transaction_cost
+        self.transaction_cost_model = transaction_cost_model
         self.pricing_model = pricing_model
         self.heston_params = heston_params or {'v0': 0.04, 'kappa': 2.0, 'theta': 0.04, 'xi': 0.1, 'rho': -0.7}
         self.merton_params = merton_params or {'lambda': 0.1, 'muJ': -0.1, 'sigmaJ': 0.2}
@@ -32,13 +33,14 @@ class DeltaHedgingEnv(gym.Env):
         self.price_path = self._simulate_price_path()
         self.option_price_path = [self._bs_price(self.S0, 0)]
         self.pnl = 0.0
+        self.pnl_history = []
         return self._get_obs(), {}
 
     def step(self, action):
         prev_hedge = self.hedge
         action = np.clip(action[0], -1, 1)
         self.hedge += action  # Update hedge position
-        transaction_cost = abs(action) * self.S * self.transaction_cost
+        transaction_cost = self._compute_transaction_cost(action)
         self.cash -= action * self.S + transaction_cost
         self.t += 1
         self.S = self.price_path[self.t]
@@ -46,12 +48,29 @@ class DeltaHedgingEnv(gym.Env):
         self.option_price_path.append(option_price)
         reward = self.hedge * (self.price_path[self.t] - self.price_path[self.t-1]) - transaction_cost
         self.pnl += reward
+        self.pnl_history.append(self.pnl)
         if self.t == self.N:
             # Option payoff at maturity
             payoff = max(self.S - self.K, 0) if self.option_type == 'call' else max(self.K - self.S, 0)
             reward += -payoff + self.hedge * (self.S - self.price_path[self.t-1])
             self.done = True
         return self._get_obs(), reward, self.done, False, {}
+
+    def _compute_transaction_cost(self, action):
+        """Compute transaction cost based on the selected model"""
+        if self.transaction_cost_model == 'linear':
+            return abs(action) * self.S * self.transaction_cost
+        elif self.transaction_cost_model == 'nonlinear':
+            # Nonlinear cost: higher cost for larger trades
+            base_cost = abs(action) * self.S * self.transaction_cost
+            nonlinear_factor = 1 + 0.5 * abs(action)  # Cost increases with trade size
+            return base_cost * nonlinear_factor
+        elif self.transaction_cost_model == 'spread':
+            # Spread-based cost: bid-ask spread simulation
+            spread = self.S * 0.002  # 0.2% spread
+            return abs(action) * spread + abs(action) * self.S * self.transaction_cost
+        else:
+            raise ValueError(f"Unknown transaction cost model: {self.transaction_cost_model}")
 
     def _get_obs(self):
         delta = self._bs_delta(self.S, self.t * self.dt)
