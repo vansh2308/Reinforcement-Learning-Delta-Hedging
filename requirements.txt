@@ -1,0 +1,7 @@
+torch
+numpy
+pandas
+matplotlib
+gymnasium
+stable-baselines3
+scikit-learn 
