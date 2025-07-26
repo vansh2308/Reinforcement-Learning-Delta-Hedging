@@ -99,4 +99,19 @@ class PPOAgent:
                 self.optimizer_critic.zero_grad()
                 critic_loss.backward()
                 self.optimizer_critic.step()
-        self.memory = [] 
+        self.memory = []
+
+    def save(self, path):
+        torch.save({
+            'actor': self.actor.state_dict(),
+            'critic': self.critic.state_dict(),
+            'optimizer_actor': self.optimizer_actor.state_dict(),
+            'optimizer_critic': self.optimizer_critic.state_dict(),
+        }, path)
+
+    def load(self, path):
+        checkpoint = torch.load(path)
+        self.actor.load_state_dict(checkpoint['actor'])
+        self.critic.load_state_dict(checkpoint['critic'])
+        self.optimizer_actor.load_state_dict(checkpoint['optimizer_actor'])
+        self.optimizer_critic.load_state_dict(checkpoint['optimizer_critic']) 

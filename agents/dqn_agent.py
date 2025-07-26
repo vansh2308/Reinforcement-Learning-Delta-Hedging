@@ -77,4 +77,17 @@ class DQNAgent:
         loss = nn.MSELoss()(q_values.squeeze(), expected_q)
         self.optimizer.zero_grad()
         loss.backward()
-        self.optimizer.step() 
+        self.optimizer.step()
+
+    def save(self, path):
+        torch.save({
+            'q_net': self.q_net.state_dict(),
+            'target_q_net': self.target_q_net.state_dict(),
+            'optimizer': self.optimizer.state_dict(),
+        }, path)
+
+    def load(self, path):
+        checkpoint = torch.load(path)
+        self.q_net.load_state_dict(checkpoint['q_net'])
+        self.target_q_net.load_state_dict(checkpoint['target_q_net'])
+        self.optimizer.load_state_dict(checkpoint['optimizer']) 

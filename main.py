@@ -14,11 +14,14 @@ AGENT_MAP = {
     'actor_critic': ActorCriticAgent
 }
 
-def train(agent_name, episodes=200):
-    env = DeltaHedgingEnv()
+def train(agent_name, episodes=200, pricing_model='black_scholes', save_model=None, load_model=None):
+    env = DeltaHedgingEnv(pricing_model=pricing_model)
     state_dim = env.observation_space.shape[0]
     action_dim = 5 if agent_name == 'dqn' else env.action_space.shape[0]
     agent = AGENT_MAP[agent_name](state_dim, action_dim)
+    if load_model:
+        print(f"Loading model from {load_model}")
+        agent.load(load_model)
     episode_rewards = []
     sharpe_ratios = []
     for ep in range(episodes):
@@ -53,11 +56,17 @@ def train(agent_name, episodes=200):
     plot_training_curve(episode_rewards, title=f'{agent_name.upper()} Training Curve')
     plot_sharpe_ratio(sharpe_ratios, title=f'{agent_name.upper()} Sharpe Ratio')
     plot_pnl_curve(pnl, title=f'{agent_name.upper()} PnL Curve (Last Episode)')
+    if save_model:
+        print(f"Saving model to {save_model}")
+        agent.save(save_model)
     return episode_rewards, sharpe_ratios, pnl
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--agent', type=str, choices=['dqn', 'ppo', 'actor_critic'], default='dqn')
     parser.add_argument('--episodes', type=int, default=200)
+    parser.add_argument('--save-model', type=str, default=None, help='Path to save the trained model')
+    parser.add_argument('--load-model', type=str, default=None, help='Path to load a pre-trained model')
+    parser.add_argument('--pricing-model', type=str, choices=['black_scholes', 'heston', 'merton'], default='black_scholes', help='Underlying price process model')
     args = parser.parse_args()
-    train(args.agent, args.episodes) 
+    train(args.agent, args.episodes, pricing_model=args.pricing_model, save_model=args.save_model, load_model=args.load_model) 
