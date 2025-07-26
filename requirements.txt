@@ -5,4 +5,8 @@ matplotlib
 gymnasium
 stable-baselines3
 scikit-learn
-scipy 
+scipy
+yfinance
+pandas-datareader
+requests
+seaborn 
