@@ -160,27 +160,16 @@ The framework calculates and visualizes:
 - **Ratios**: Sharpe, Sortino, Calmar
 - **Trading Stats**: Win rate, trade frequency, average trade size
 
-## 🎓 Academic Applications
-
-This project is suitable for:
-- **Quantitative Finance Research**: Delta hedging strategies
-- **RL Research**: Continuous control in financial markets
-- **Risk Management**: Portfolio risk analysis
-- **Algorithmic Trading**: Strategy development and testing
-
 ## 📚 References
-
 - [Stable Baselines3](https://github.com/DLR-RM/stable-baselines3)
 - [OpenAI Gymnasium](https://gymnasium.farama.org/)
 - [Yahoo Finance](https://finance.yahoo.com/)
 - [Black-Scholes Model](https://en.wikipedia.org/wiki/Black%E2%80%93Scholes_model)
 - [Heston Model](https://en.wikipedia.org/wiki/Heston_model)
 
-## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit pull requests or open issues for:
-- Additional RL algorithms
-- New pricing models
-- Enhanced risk metrics
-- Performance optimizations
-- Documentation improvements 
+
+
+### Author
+- Github - [vansh2308](https://github.com/vansh2308)
+- Website - [Vansh Agarwal](https://portfolio-website-self-xi.vercel.app/)
