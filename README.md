@@ -1,4 +1,4 @@
-# Advanced RL Delta Hedging in Quantitative Finance
+# Reinforcement Learning for Delta Hedging
 
 This project implements advanced reinforcement learning algorithms (DQN, PPO, Actor-Critic) for delta hedging in quantitative finance with real market data integration, comprehensive backtesting, and advanced risk analytics.
 
